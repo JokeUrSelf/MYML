@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "strict": true
+    },
+    "tasks": {
+        "start": "deno run --allow-net --allow-read ./src/main.ts",
+        "test": "deno test --allow-net"
+    },
+    "fmt": {
+        "options": {
+            "lineWidth": 80,
+            "indentWidth": 2
+        }
+    },
+    "lint": {
+        "exclude": [
+            "tests/**"
+        ]
+    },
+    "imports": {
+        "@std/uuid": "jsr:@std/uuid",
+        "@src/": "./src/"
+    }
+}
