@@ -3,6 +3,8 @@ DOCKERFILE_DIR = $(shell pwd)
 DOCKER_IMAGE_NAME = myml
 DOCKER_CONTAINER_NAME = myml
 
+run: init start
+
 init: dockerignore build
 
 dockerignore:
