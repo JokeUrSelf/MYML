@@ -1,4 +1,4 @@
-import { tokenize } from "@src/parser.ts";
+import { tokenize } from "@src/lexer.ts";
 const filePath = "example/file.myml";
 const sourceCode = Deno.readTextFileSync(filePath);
 
