@@ -1,4 +1,5 @@
-DOCKERFILE_DIR = $(shell pwd)
+WORKING_DIR = $(shell pwd)
+
 
 DOCKER_IMAGE_NAME = myml
 DOCKER_CONTAINER_NAME = myml
@@ -14,10 +15,10 @@ dockerignore:
 	@cat  .gitignore .dockerignore.edit >> .dockerignore 
 
 build: stop kill
-	@docker build -t ${DOCKER_IMAGE_NAME} ${DOCKERFILE_DIR}
+	@docker build -t ${DOCKER_IMAGE_NAME} ${WORKING_DIR}
 
-start: stop
-	@docker run --rm --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
+start:
+	@docker run --rm --name ${DOCKER_CONTAINER_NAME} -v ${WORKING_DIR}:/app -w /app ${DOCKER_IMAGE_NAME}
 
 uninstall: kill
 	@docker rmi ${DOCKER_IMAGE_NAME} || true
@@ -31,4 +32,8 @@ stop:
 shell: 
 	@docker exec -it ${DOCKER_CONTAINER_NAME} /bin/bash
 
-.PHONY: init build uninstall kill start stop shell
+test:
+	@docker run --rm --name ${DOCKER_CONTAINER_NAME} -v ${WORKING_DIR}:/app -w /app ${DOCKER_IMAGE_NAME} deno test --allow-read --allow-net
+
+
+.PHONY: init build uninstall kill start stop shell test
