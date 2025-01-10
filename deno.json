@@ -19,6 +19,7 @@
     },
     "imports": {
         "@std/uuid": "jsr:@std/uuid",
-        "@src/": "./src/"
+        "@src/": "./src/",
+        "@types/": "./types/"
     }
 }

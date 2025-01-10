@@ -1,70 +1,5 @@
-import { isAlphabetic, isAlphanumeric, isWhitespace } from "@src/charCheck.ts";
-
-const indentation = 2;
-
-type TokenType = {
-  validate?: (str: string) => boolean;
-  convert?: (token: Token) => void;
-} | undefined;
-
-// type Scope = object;
-
-// const Scopes = {
-//   ImportsInvocation: {},
-//   ArgumentsInitialization: {},
-//   TagInitialization: {},
-
-//   ArgumentDeclaration: {},
-//   ArgumentInvocation: {},
-//   ArgumentDefinition: {},
-
-//   TagNameInvocation: {},
-//   TagArguments: {},
-
-//   TagChildDeclaration: {},
-//   TagChildInvocation: {},
-//   TagChildDefinition: {},
-
-//   AttributeDeclaration: {},
-//   AttributeDefinition: {},
-// };
-
-const TokenTypes = {
-  OpeningParen: { validate: (chr) => chr === "(" },
-  ClosingParen: { validate: (chr) => chr === ")" },
-  Quote: { validate: (chr) => chr === '"' },
-  Colon: { validate: (chr) => chr === ":" },
-  Dollar: { validate: (chr) => chr === "$" },
-  At: { validate: (chr) => chr === "@" },
-  Alphanumeric: { validate: isAlphanumeric },
-  Whitespace: { validate: isWhitespace },
-
-  Depth: {
-    convert: (token) => {
-      if (token.type !== TokenTypes.Whitespace) return;
-      token.type = undefined
-
-      for (let i = token.value.length - 1; i >= 0; i--) {
-        if (!"\n\r".includes(token.value[i])) continue;
-
-        token.value = `${(token.value.length - 1 - i) / indentation >> 0}`;
-        token.type = TokenTypes.Depth;
-      }
-    },
-  },
-
-  Identifier: {
-    convert: (token) =>
-      token.type === TokenTypes.Alphanumeric &&
-      isAlphabetic(token.value[0]) &&
-      (token.type = TokenTypes.Identifier),
-  },
-} as Record<string, TokenType>;
-
-interface Token {
-  value: string;
-  type: TokenType;
-}
+import { INDENT_LVL } from "@src/config.ts";
+import { TokenTypes } from "@src/TokenTypes.ts";
 
 function typeOf(chr: string): TokenType {
   for (const key in TokenTypes) {
@@ -77,17 +12,7 @@ function typeOf(chr: string): TokenType {
   return undefined;
 }
 
-function convert(token: Token): Token {
-  for (const key in TokenTypes) {
-    const type = TokenTypes[key];
-
-    type?.convert && type.convert(token);
-  }
-
-  return token;
-}
-
-export function tokenize(sourceCode: string) {
+function tokenizeRaw(sourceCode: string) {
   const tokens = [] as Token[];
 
   for (let i = 0; i < sourceCode.length; i++) {
@@ -103,13 +28,62 @@ export function tokenize(sourceCode: string) {
       value.push(sourceCode[i++]);
     }
 
-    const token = convert({
+    tokens.push({
       value: value.join(""),
       type: tokenType,
     });
-
-    token.type && tokens.push(token);
   }
 
   return tokens;
+}
+
+export function tokenize(sourceCode: string) {
+  const tokens = tokenizeRaw(sourceCode);
+  const refinedTokens = [];
+  let depth = 0;
+  let scoped = false;
+
+
+  while (tokens.length > 0) {
+    const token = tokens.shift();
+    if (token === undefined) break;
+
+    if (token.type === TokenTypes.OpeningParen) {
+      scoped = true
+    }
+    
+    if (token.type === TokenTypes.ClosingParen) {
+      scoped = false
+    }
+
+    if (token.type === TokenTypes.Whitespace) {
+      if (scoped) continue
+      
+      const indentation = token.value.lastIndexOf("\n") + 1;
+      if (!indentation) continue;
+
+      const currDepth = (token.value.length - indentation) / INDENT_LVL >> 0;
+
+      for (let i = currDepth; i < depth; i++) {
+        tokens.unshift({
+          value: "]",
+          type: TokenTypes.Indentation,
+        });
+      }
+
+      if (currDepth > depth) {
+        tokens.unshift({
+          value: "[",
+          type: TokenTypes.Indentation,
+        });
+      }
+
+      depth = currDepth;
+      continue;
+    }
+
+    refinedTokens.push(token);
+  }
+
+  return refinedTokens;
 }

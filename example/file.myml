@@ -1,42 +1,46 @@
-(
-  attr1
-  attr2
-  attr3
-)
+Program
+  (
+    attr1
+    attr2
+    attr3
+    @someNode1
+    @someNode2
+    @someNode3
+  )
 
-Box
-attr: "some text"
-attr: attr1
-  ComponentName
+  Box
   attr: "some text"
-  attr: attr2
-
-    ComponentName 
+  attr: attr1
+    ComponentName
     attr: "some text"
-    attr: attr3
-      @node1: "child $prop1"
+    attr: attr2
 
-      @node2: ComponentName
+      ComponentName 
+      attr: "some text"
+      attr: attr3
+        @node1: "child $prop1"
+
+        @node2: ComponentName
+        attr: "some text"
+        attr: attr1
+
+          @node2: ComponentName
+            @node1: "child $prop1"
+
+        @node3: Box
+
+      Box
+      attr: "some text"
+      attr: attr1
+        @node1: "child string"
+      
+      Box
       attr: "some text"
       attr: attr1
 
-        @node2: ComponentName
-          @node1: "child $prop1"
+      ComponentName
+        @node1: "child string"
+      
+      Box
 
-      @node3: Box
-
-    Box
-    attr: "some text"
-    attr: attr1
-      @node1: "child string"
-    
-    Box
-    attr: "some text"
-    attr: attr1
-
-    ComponentName
-      @node1: "child string"
-    
-    Box
-
-    Box
+      Box
